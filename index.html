@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giáng Sinh Vui Vẻ! 🎄</title>
+    <style>
+        html {
+            background-color: #000;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            background: #000 !important;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            width: 100%;
+            height: 100%;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #000 !important;
+            image-rendering: crisp-edges;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            opacity: 1;
+        }
+        
+        #text-container {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        
+        .word {
+            display: inline-block;
+            opacity: 0;
+        }
+        
+        @media (max-width: 768px) {
+            #text-container {
+                font-size: 20px;
+                top: 5%;
+            }
+        }
+    </style>
+</head>
+<body style="background: #000;">
+    <canvas id="canvas" style="background: #000;"></canvas>
+    <div id="text-container"></div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        // Thiết lập kích thước canvas
+        function resizeCanvas() {
+            const w = canvas.width;
+            const h = canvas.height;
+            canvas.width = Math.min(window.innerWidth, 800);
+            canvas.height = Math.min(window.innerHeight, 600);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Trung tâm canvas
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // === VẼ CÂY THÔNG ===
+        function drawTree() {
+            // Các tầng lá (tam giác) - vẽ trước
+            const drawTriangle = (x, y, width, color) => {
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - width/2, y + width);
+                ctx.lineTo(x + width/2, y + width);
+                ctx.closePath();
+                ctx.fill();
+            };
+            
+            drawTriangle(centerX, centerY - 80, 200, '#228B22');
+            drawTriangle(centerX, centerY - 20, 160, '#228B22');
+            drawTriangle(centerX, centerY + 40, 120, '#228B22');
+            
+            // Thân cây (màu nâu) - vẽ sau để không bị che
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(centerX - 20, centerY + 160, 40, 80);
+            
+            // Ngôi sao
+            drawStar(centerX, centerY - 80, 15, '#FFD700');
+        }
+        
+        function drawStar(x, y, size, color) {
+            ctx.fillStyle = color;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 4 * Math.PI / 5) - Math.PI / 2;
+                const px = x + Math.cos(angle) * size;
+                const py = y + Math.sin(angle) * size;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        // === VẼ QUÀ ===
+        function drawGifts() {
+            const drawGift = (x, y, size, mainColor, ribbonColor) => {
+                // Hộp
+                ctx.fillStyle = mainColor;
+                ctx.fillRect(x - size/2, y, size, size);
+                
+                // Ruy băng dọc
+                ctx.fillStyle = ribbonColor;
+                ctx.fillRect(x - size/10, y, size/5, size);
+                
+                // Ruy băng ngang
+                ctx.fillRect(x - size/2, y + size/2 - size/10, size, size/5);
+            };
+            
+            // Vẽ quà dưới thân cây (y + 240 trở xuống)
+            drawGift(centerX - 50, centerY + 240, 30, '#FF0000', '#FFD700');
+            drawGift(centerX + 40, centerY + 250, 40, '#0000FF', '#C0C0C0');
+            drawGift(centerX, centerY + 260, 25, '#800080', '#FFC0CB');
+        }
+        
+        // === TUYẾT RƠI ===
+        const snowflakes = [];
+        const numSnowflakes = 120;
+        
+        for (let i = 0; i < numSnowflakes; i++) {
+            snowflakes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                radius: Math.random() * 2 + 1,
+                speed: Math.random() * 2 + 1
+            });
+        }
+        
+        function drawSnow() {
+            ctx.fillStyle = 'white';
+            snowflakes.forEach(flake => {
+                ctx.beginPath();
+                ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                flake.y += flake.speed;
+                
+                if (flake.y > canvas.height) {
+                    flake.y = -10;
+                    flake.x = Math.random() * canvas.width;
+                }
+            });
+        }
+        
+        // === ĐÈN NHẤP NHÁY ===
+        const lights = [];
+        const lightPositions = [
+            [-70, 70], [70, 70], [0, 90], [-40, 50], [40, 50],
+            [-50, 130], [50, 130], [0, 150], [-30, 110], [30, 110],
+            [-30, 190], [30, 190], [0, 210], [15, 230], [-15, 230]
+        ];
+        
+        const brightColors = ['#FF0000', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500', '#00FF00', '#FFFFFF', '#FFD700'];
+        
+        lightPositions.forEach(pos => {
+            lights.push({
+                x: centerX + pos[0],
+                y: centerY + pos[1],
+                color: brightColors[Math.floor(Math.random() * brightColors.length)]
+            });
+        });
+        
+        function drawLights() {
+            lights.forEach(light => {
+                ctx.fillStyle = light.color;
+                ctx.beginPath();
+                ctx.arc(light.x, light.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Đổi màu ngẫu nhiên (không bao gồm trắng)
+                if (Math.random() > 0.7) {
+                    const colorOptions = ['#FF0000', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500', '#00FF00', '#FFD700'];
+                    light.color = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+                }
+            });
+        }
+        
+        // === HIỆU ỨNG CHỮ ===
+        const textContainer = document.getElementById('text-container');
+        const words = ['Happy', 'Christmas', 'Day!'];
+        const colors = ['#FF0000', '#00CC00', '#FFD700'];
+        
+        let currentWord = 0;
+        let currentChar = 0;
+        let wordElements = [];
+        
+        function animateText() {
+            if (currentWord < words.length) {
+                const word = words[currentWord];
+                
+                if (currentChar === 0) {
+                    const span = document.createElement('span');
+                    span.className = 'word';
+                    span.style.color = colors[currentWord];
+                    textContainer.appendChild(span);
+                    if (currentWord > 0) {
+                        textContainer.appendChild(document.createTextNode(' '));
+                    }
+                    wordElements.push(span);
+                }
+                
+                const span = wordElements[currentWord];
+                span.textContent += word[currentChar];
+                span.style.opacity = '1';
+                
+                currentChar++;
+                
+                if (currentChar < word.length) {
+                    setTimeout(animateText, 120);
+                } else {
+                    currentChar = 0;
+                    currentWord++;
+                    setTimeout(animateText, 300);
+                }
+            }
+        }
+        
+        // === NHẠC NOEL ===
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playNote(frequency, duration) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+        }
+        
+        function playJingleBells() {
+            const notes = {
+                'C': 262, 'D': 294, 'E': 330, 'F': 349, 'G': 392
+            };
+            
+            // "Jingle Bells, Jingle Bells, Jingle all the way"
+            const melody = [
+                // "Jingle bells, jingle bells"
+                ['E', 280], ['E', 280], ['E', 560],
+                ['E', 280], ['E', 280], ['E', 560],
+                
+                // "Jingle all the way"
+                ['E', 280], ['G', 280], ['C', 280], ['D', 280],
+                ['E', 840],
+                
+                // "Oh what fun it is to ride in a"
+                ['F', 280], ['F', 280], ['F', 280], ['F', 280],
+                ['F', 280], ['E', 280], ['E', 280], ['E', 280],
+                
+                // "One horse open sleigh"
+                ['E', 280], ['D', 280], ['D', 280], ['E', 280],
+                ['D', 560], ['G', 560],
+                
+                // "Jingle bells, Jingle Bells"
+                ['E', 280], ['E', 280], ['E', 560],
+                ['E', 280], ['E', 280], ['E', 560],
+                
+                // "Jingle all the way"
+                ['E', 280], ['G', 280], ['C', 280], ['D', 280],
+                ['E', 840],
+                
+                // "Oh what fun it is to ride in a one"
+                ['F', 280], ['F', 280], ['F', 280], ['F', 280],
+                ['F', 280], ['E', 280], ['E', 280], ['E', 280],
+                
+                // "Horse open sleigh"
+                ['G', 280], ['G', 280], ['F', 280], ['D', 280],
+                ['C', 840] // sleigh (trầm - nốt C thấp)
+            ];
+            
+            let time = 0;
+            let totalDuration = 0;
+            
+            melody.forEach(([note, duration]) => {
+                setTimeout(() => {
+                    playNote(notes[note], duration);
+                }, time);
+                time += duration;
+                totalDuration += duration;
+            });
+            
+            // Lặp lại ngay lập tức không nghỉ
+            setTimeout(() => {
+                playJingleBells();
+            }, totalDuration);
+        }
+        
+        // === VÒNG LẶP ANIMATION ===
+        let started = false;
+        
+        function animate() {
+            // Vẽ nền đen không trong suốt
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawTree();
+            drawGifts();
+            drawSnow();
+            drawLights();
+            
+            if (!started) {
+                started = true;
+                setTimeout(() => {
+                    playJingleBells();
+                    animateText();
+                }, 1000);
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Bắt đầu khi click (cần cho phép phát nhạc trên mobile)
+        canvas.addEventListener('click', () => {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+        
+        animate();
+    </script>
+</body>
+</html>
